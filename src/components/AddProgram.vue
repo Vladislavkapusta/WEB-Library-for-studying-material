@@ -5,7 +5,7 @@
     </button>
 
     <div v-if="showForm" class="form-container">
-      <input v-model="newProgram.name" placeholder="Название программы" class="form-input" />
+      <input v-model="newProgram.title" placeholder="Название программы" class="form-input" />
       <input v-model="newAttributes" placeholder="Атрибуты (через запятую)" class="form-input" />
       <div class="form-actions">
         <button @click="submitProgram" class="submit-btn">Добавить</button>
@@ -21,7 +21,7 @@ import { ref, defineEmits, onMounted } from 'vue'
 import { useAnimate } from 'vue-motion-one'
 
 const showForm = ref(false)
-const newProgram = ref({ name: '', attributes: [] })
+const newProgram = ref({ title: '', attributes: [] })
 const newAttributes = ref('')
 
 const emit = defineEmits(['addProgram'])
@@ -33,14 +33,15 @@ const openForm = () => {
 }
 
 const submitProgram = () => {
-  if (newProgram.value.name.trim()) {
+  if (newProgram.value.title.trim()) {
     animate('.form-container', { y: 20, opacity: 0 }, { duration: 0.5 })
     setTimeout(() => animate('.program-list', { y: 0 }, { duration: 1 }), 1)
     setTimeout(
       () => (
         (newProgram.value.attributes = newAttributes.value.split(',').map((attr) => attr.trim())),
         emit('addProgram', newProgram.value),
-        (newProgram.value = { name: '', attributes: [] }),
+        console.log(newAttributes.value.split(',').map((attr) => attr.trim())),
+        (newProgram.value = { title: '', attributes: [] }),
         (newAttributes.value = ''),
         (showForm.value = false)
       ),

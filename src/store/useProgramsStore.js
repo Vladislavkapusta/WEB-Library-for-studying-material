@@ -9,25 +9,25 @@ export const useProgramsStore = defineStore('programs', () => {
       programs: [
         {
           id: 1,
-          name: 'Введение',
+          title: 'Введение',
           attributes: ['Easy'],
           sections: [{ text: 'Введение в HTML и CSS' }],
         },
         {
           id: 2,
-          name: 'Семантические теги',
+          title: 'Семантические теги',
           attributes: ['Normal'],
           sections: [{ text: 'Значение семантических тегов' }],
         },
         {
           id: 3,
-          name: 'Подключение стилей',
+          title: 'Подключение стилей',
           attributes: ['Normal'],
           sections: [{ text: 'Способы подключения CSS' }],
         },
         {
           id: 4,
-          name: 'Анимации',
+          title: 'Анимации',
           attributes: ['Hard'],
           sections: [{ text: 'Создание анимаций на CSS' }],
         },
@@ -39,13 +39,13 @@ export const useProgramsStore = defineStore('programs', () => {
       programs: [
         {
           id: 5,
-          name: 'Основы JavaScript',
+          title: 'Основы JavaScript',
           attributes: ['Easy'],
           sections: [{ text: 'Переменные, типы данных' }],
         },
         {
           id: 6,
-          name: 'Функции и замыкания',
+          title: 'Функции и замыкания',
           attributes: ['Normal'],
           sections: [{ text: 'Как работают функции' }],
         },

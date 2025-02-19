@@ -7,6 +7,7 @@
       :isMain="isMain"
       @deleteProgram="$emit('deleteProgram', program.id)"
       @editProgram="$emit('editProgram', $event)"
+      @animateList="$emit('animateList')"
     />
   </div>
 </template>
@@ -16,7 +17,7 @@ import { defineProps, defineEmits } from 'vue'
 import ProgramCard from './ProgramItem.vue'
 
 defineProps({ programs: Array, isMain: Boolean })
-defineEmits(['deleteProgram', 'editProgram'])
+defineEmits(['deleteProgram', 'editProgram', 'animateList'])
 </script>
 
 <style scoped>

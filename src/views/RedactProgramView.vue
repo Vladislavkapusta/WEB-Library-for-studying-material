@@ -53,7 +53,7 @@ onMounted(() => {
     const program = programs.find((p) => p.id === programId.value)
 
     if (program) {
-      programName.value = program.name
+      programName.value = program.title
       programAttributes.value = program.attributes.join(', ')
       sections.value = program.sections.length ? [...program.sections] : [{ text: '' }]
     }
@@ -71,7 +71,7 @@ const cancel = () => {
 const publish = () => {
   const newProgram = {
     id: programId.value || Date.now(),
-    name: programName.value,
+    title: programName.value,
     attributes: programAttributes.value.split(',').map((attr) => attr.trim()),
     sections: sections.value,
   }

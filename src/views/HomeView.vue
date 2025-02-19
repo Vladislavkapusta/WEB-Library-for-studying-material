@@ -23,6 +23,8 @@ import Filters from '../components/Filters.vue'
 import AddProgram from '../components/AddProgram.vue'
 import ProgramList from '../components/ProgramList.vue'
 import { useAnimate } from 'vue-motion-one'
+import { useProgramsStore } from '@/store/useProgramsStore'
+const programsStore = useProgramsStore
 
 const { play, reset } = useAnimate(
   '.list-container',

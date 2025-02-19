@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import ErrorView from '../views/ErrorView.vue'
 import ProgramListPage from '../views/ProgramListPage.vue'
 import RedactProgramView from '@/views/RedactProgramView.vue'
+import AltHomeView from '@/views/AltHomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,7 +11,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: AltHomeView,
     },
     {
       path: '/notFound',
@@ -22,7 +23,12 @@ const router = createRouter({
       name: 'Programs',
       component: ProgramListPage,
     },
-    { path: '/edit-program/:id?', component: RedactProgramView, props: true },
+    {
+      path: '/edit-program/:id?',
+      component: RedactProgramView,
+      name: 'RedactProgram',
+      props: true,
+    },
     {
       path: '/about',
       name: 'about',

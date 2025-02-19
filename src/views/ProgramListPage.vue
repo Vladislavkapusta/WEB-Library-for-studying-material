@@ -9,6 +9,7 @@
           :programs="filteredPrograms"
           @deleteProgram="deleteProgram"
           @editProgram="editProgram"
+          @animateList="animateList"
         />
       </div>
     </main>
@@ -25,11 +26,12 @@ import AddProgram from '@/components/AddProgram.vue'
 import ProgramList from '@/components/ProgramList.vue'
 import { useAnimate } from 'vue-motion-one'
 import { stagger } from 'motion'
+
 const { play, reset } = useAnimate(
-  '.app',
-  { y: -20, opacity: 1 },
+  '.list-container',
+  { y: -20, opacity: 0 },
+  console.log('delete'),
   {
-    delay: stagger(0.1),
     duration: 0.5,
     easing: [0.22, 0.03, 0.26, 1],
   },
@@ -71,7 +73,13 @@ const addProgram = (newProgram) => {
 }
 
 const deleteProgram = (id) => {
+  console.log(id)
   programsStore.deleteProgram(discipline.value, id)
+}
+
+const animateList = () => {
+  play()
+  setTimeout(() => reset(), 1000)
 }
 
 const editProgram = (updatedProgram) => {
@@ -80,14 +88,10 @@ const editProgram = (updatedProgram) => {
 
 onMounted(() => {
   discipline.value = route.params.discipline || 'Неизвестно'
-  play()
 })
 </script>
 
 <style scoped>
-.app {
-  padding-top: 20px;
-}
 .program-list-page {
   background: #f6f3f3;
   min-height: 100vh;
