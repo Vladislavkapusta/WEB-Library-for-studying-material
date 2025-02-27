@@ -4,6 +4,7 @@ import ErrorView from '../views/ErrorView.vue'
 import ProgramListPage from '../views/ProgramListPage.vue'
 import RedactProgramView from '@/views/RedactProgramView.vue'
 import AltHomeView from '@/views/AltHomeView.vue'
+import ProgramReadView from '@/views/ProgramReadView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,12 +31,10 @@ const router = createRouter({
       props: true,
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      path: '/program/:disciplineTitle/:programId',
+      name: 'program-read',
+      component: ProgramReadView,
+      props: true, // Позволяет передавать параметры в компонент
     },
   ],
 })

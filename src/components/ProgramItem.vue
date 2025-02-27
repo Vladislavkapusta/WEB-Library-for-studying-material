@@ -64,6 +64,13 @@ const store = useProgramsStore()
 const openProgram = () => {
   if (props.isMain == true) {
     router.push(`/programs/${props.program.title}`)
+  } else {
+    const discipline = store.disciplines.find((d) =>
+      d.programs.some((p) => p.id === props.program.id),
+    )
+    if (discipline) {
+      router.push(`/program/${discipline.title}/${props.program.id}`)
+    }
   }
 }
 

@@ -4,7 +4,7 @@
       <span class="admin">Admin 👤</span>
       <h1>{{ isEditing ? 'Редактирование программы' : 'Добавление программы' }}</h1>
       <h2>в дисциплину {{ disciplineName }}</h2>
-      <button class="cancel" @click="cancel">отмена</button>
+      <button class="cancel" @click="goBack">отмена</button>
     </header>
 
     <div class="input-group">
@@ -64,8 +64,13 @@ const addSection = () => {
   sections.value.push({ text: '' })
 }
 
+const goBack = () => {
+  router.go(-1)
+  console.log('published')
+}
+
 const cancel = () => {
-  router.push('/')
+  goBack
 }
 
 const publish = () => {
@@ -78,11 +83,11 @@ const publish = () => {
 
   if (isEditing.value) {
     store.editProgram(disciplineName.value, newProgram)
+    router.go(-1)
   } else {
     store.addProgram(disciplineName.value, newProgram)
+    router.go(-1)
   }
-
-  router.push('/')
 }
 </script>
 
