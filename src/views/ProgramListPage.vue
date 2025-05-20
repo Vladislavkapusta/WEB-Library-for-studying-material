@@ -26,6 +26,7 @@ import AddProgram from '@/components/AddProgram.vue'
 import ProgramList from '@/components/ProgramList.vue'
 import { useAnimate } from 'vue-motion-one'
 import { stagger } from 'motion'
+import { useUsersStore } from '@/store/users'
 
 const { play, reset } = useAnimate(
   '.list-container',
@@ -40,20 +41,25 @@ const { play, reset } = useAnimate(
 const route = useRoute()
 const router = useRouter()
 const programsStore = useProgramsStore()
+const users = useUsersStore()
 
 const discipline = ref(route.params.discipline || 'Неизвестно')
-
+console.log(route.params.discipline)
 const nameOfPage = 'Программы по ' + route.params.discipline
 
 const filters = ref({ name: '', attributes: [] })
 
+
+
+
 const programs = computed(() => programsStore.getProgramsByDiscipline(discipline.value))
+
 
 const filteredPrograms = computed(() => {
   return programs.value.filter((program) => {
     return (
       (!filters.value.name ||
-        program.name.toLowerCase().includes(filters.value.name.toLowerCase())) &&
+        program.title.toLowerCase().includes(filters.value.name.toLowerCase())) &&
       (filters.value.attributes.length === 0 ||
         filters.value.attributes.every((attr) => program.attributes.includes(attr)))
     )
@@ -84,6 +90,7 @@ const animateList = () => {
 
 const editProgram = (updatedProgram) => {
   programsStore.editProgram(discipline.value, updatedProgram)
+  console.log(updatedProgram)
 }
 
 onMounted(() => {

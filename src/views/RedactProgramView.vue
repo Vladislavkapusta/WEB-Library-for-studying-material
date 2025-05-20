@@ -12,8 +12,18 @@
       <input v-model="programAttributes" placeholder="Атрибуты программы" />
     </div>
 
-    <div class="media-upload">
-      <button>Добавьте медиафайлы 📎</button>
+    <div class="media-upload" @dragover.prevent @drop.prevent="handleDrop" @dragenter="dragEnter" @dragleave="dragLeave" :class="{ 'drag-over': isDragging }">
+      <p>Перетащите медиафайлы сюда или нажмите для выбора 📎</p>
+      <input type="file" multiple @change="handleFileInput" style="display: none" ref="fileInput" />
+      <button class="file-input-button" @click="$refs.fileInput.click()">Выбрать файлы</button>
+    </div>
+
+    <div class="media-preview" v-if="mediaFiles.length">
+      <div v-for="(file, index) in mediaFiles" :key="index" class="media-item">
+        <img v-if="file.type.startsWith('image/')" :src="file.url" alt="Preview" />
+        <p v-else>{{ file.name }} ({{ file.type }})</p>
+        <button @click="removeMedia(index)">Удалить</button>
+      </div>
     </div>
 
     <div v-for="(section, index) in sections" :key="index" class="section">
@@ -39,13 +49,16 @@ const router = useRouter()
 const route = useRoute()
 const store = useProgramsStore()
 
-const disciplineName = ref(route.params.discipline || 'HTML, CSS')
+const disciplineName = ref(route.params.disciplineTitle )
 const programId = ref(route.params.id ? Number(route.params.id) : null)
 const isEditing = computed(() => programId.value !== null)
 
 const programName = ref('')
 const programAttributes = ref('')
 const sections = ref([{ text: '' }])
+const mediaFiles = ref([]) // Хранит загруженные медиафайлы
+const isDragging = ref(false) // Для стилизации drag-and-drop зоны
+const fileInput = ref(null) // Ссылка на input для выбора файлов
 
 onMounted(() => {
   if (isEditing.value) {
@@ -56,6 +69,7 @@ onMounted(() => {
       programName.value = program.title
       programAttributes.value = program.attributes.join(', ')
       sections.value = program.sections.length ? [...program.sections] : [{ text: '' }]
+      mediaFiles.value = program.media || [] // Загружаем медиа из store, если есть
     }
   }
 })
@@ -66,11 +80,40 @@ const addSection = () => {
 
 const goBack = () => {
   router.go(-1)
-  console.log('published')
 }
 
-const cancel = () => {
-  goBack
+const dragEnter = () => {
+  isDragging.value = true
+}
+
+const dragLeave = () => {
+  isDragging.value = false
+}
+
+const handleDrop = (event) => {
+  isDragging.value = false
+  const files = event.dataTransfer.files
+  processFiles(files)
+}
+
+const handleFileInput = (event) => {
+  const files = event.target.files
+  processFiles(files)
+}
+
+const processFiles = (files) => {
+  for (const file of files) {
+    const fileData = {
+      name: file.name,
+      type: file.type,
+      url: URL.createObjectURL(file), // Создаем временный URL для предпросмотра
+    }
+    mediaFiles.value.push(fileData)
+  }
+}
+
+const removeMedia = (index) => {
+  mediaFiles.value.splice(index, 1)
 }
 
 const publish = () => {
@@ -79,15 +122,15 @@ const publish = () => {
     title: programName.value,
     attributes: programAttributes.value.split(',').map((attr) => attr.trim()),
     sections: sections.value,
+    media: mediaFiles.value, // Добавляем медиафайлы в программу
   }
 
   if (isEditing.value) {
     store.editProgram(disciplineName.value, newProgram)
-    router.go(-1)
   } else {
     store.addProgram(disciplineName.value, newProgram)
-    router.go(-1)
   }
+  router.go(-1)
 }
 </script>
 
@@ -100,13 +143,13 @@ const publish = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: 100%;
 }
 header {
   display: flex;
   justify-content: space-between;
   width: 100%;
   align-items: center;
-  color: white;
 }
 .admin {
   font-size: 14px;
@@ -127,13 +170,48 @@ input {
   padding: 10px;
   border-radius: 5px;
 }
+
 .media-upload {
   background: #e1bee7;
   width: 100%;
   text-align: center;
-  padding: 10px;
+  padding: 20px;
   border-radius: 10px;
   margin: 10px 0;
+  cursor: pointer;
+}
+.media-upload.drag-over {
+  background: #d81b60;
+  color: white;
+}
+.file-input-button{
+  background-color: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+}
+.media-preview {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0;
+}
+.media-item {
+  background: #fff;
+  color: black;
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.media-item img {
+  max-width: 100px;
+  max-height: 100px;
+}
+.section{
+  width: 100%;
 }
 .section textarea {
   width: 100%;

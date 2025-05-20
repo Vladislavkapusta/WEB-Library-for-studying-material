@@ -1,5 +1,5 @@
 <template>
-  <div class="program-list">
+  <div v-if="users.currentUser" class="program-list">
     <ProgramCard
       v-for="program in programs"
       :key="program.id"
@@ -15,9 +15,13 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue'
 import ProgramCard from './ProgramItem.vue'
+import { useUsersStore } from '@/store/users'
+
+const users = useUsersStore()
 
 defineProps({ programs: Array, isMain: Boolean })
 defineEmits(['deleteProgram', 'editProgram', 'animateList'])
+
 </script>
 
 <style scoped>

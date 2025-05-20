@@ -5,6 +5,9 @@ import ProgramListPage from '../views/ProgramListPage.vue'
 import RedactProgramView from '@/views/RedactProgramView.vue'
 import AltHomeView from '@/views/AltHomeView.vue'
 import ProgramReadView from '@/views/ProgramReadView.vue'
+import RegistrationView from '@/views/RegistrationView.vue' // Новый компонент
+import AuthorizationView from '@/views/AuthorizationView.vue' // Новый компонент
+import ProfileView from '@/views/ProfileView.vue' // Новый компонент
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,7 +28,7 @@ const router = createRouter({
       component: ProgramListPage,
     },
     {
-      path: '/edit-program/:id?',
+      path: '/edit-program/:disciplineTitle/:id?',
       component: RedactProgramView,
       name: 'RedactProgram',
       props: true,
@@ -34,8 +37,33 @@ const router = createRouter({
       path: '/program/:disciplineTitle/:programId',
       name: 'program-read',
       component: ProgramReadView,
-      props: true, // Позволяет передавать параметры в компонент
+      props: true,
     },
+    {
+      path: '/register',
+      name: 'Registration',
+      component: RegistrationView,
+    },
+    {
+      path: '/login',
+      name: 'Authorization',
+      component: AuthorizationView,
+    },
+    {
+      path: '/profile',
+      name: 'Profile',
+      component: ProfileView,
+    },
+    // {
+    //   path: '/edit-profile',
+    //   name: 'EditProfile',
+    //   component: () => import('@/views/EditProfileView.vue'), // Загружаем асинхронно (lazy loading)
+    // },
+    // {
+    //   path: '/completed-courses',
+    //   name: 'CompletedCourses',
+    //   component: () => import('@/views/CompletedCoursesView.vue'), // Загружаем асинхронно (lazy loading)
+    // },
   ],
 })
 

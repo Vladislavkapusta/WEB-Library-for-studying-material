@@ -13,13 +13,40 @@
 </template>
 
 <script setup>
-import { ref, defineEmits } from 'vue'
+import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useProgramsStore } from '@/store/programs'
 
 const emit = defineEmits(['applyFilters', 'resetFilters'])
+const route = useRoute()
+const programsStore = useProgramsStore()
 
 const nameFilter = ref('')
 const selectedAttribute = ref('')
-const availableAttributes = ['IT', 'Артефакты', 'Frontend', 'Backend', 'Design']
+
+// Определяем, находимся ли мы на главной странице или на странице программ
+const isMainPage = computed(() => !route.params.discipline)
+
+// Собираем уникальные атрибуты в зависимости от страницы
+const availableAttributes = computed(() => {
+  const attributesSet = new Set()
+
+  if (isMainPage.value) {
+    // На главной странице собираем атрибуты дисциплин
+    programsStore.disciplines.forEach((discipline) => {
+      discipline.attributes.forEach((attr) => attributesSet.add(attr))
+    })
+  } else {
+    // На странице ProgramListPage собираем атрибуты программ
+    const disciplineTitle = route.params.discipline
+    const programs = programsStore.getProgramsByDiscipline(disciplineTitle)
+    programs.forEach((program) => {
+      program.attributes.forEach((attr) => attributesSet.add(attr))
+    })
+  }
+
+  return Array.from(attributesSet)
+})
 
 const applyFilters = () => {
   emit('applyFilters', {

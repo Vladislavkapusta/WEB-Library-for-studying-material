@@ -9,8 +9,14 @@
     </header>
 
     <!-- Медиа блок -->
-    <div class="media-container">
-      <img v-for="(image, index) in mediaFiles" :key="index" :src="image" class="media-item" />
+    <div class="media-container" v-if="program?.media?.length">
+      <div v-for="(media, index) in program.media" :key="index" class="media-item">
+        <img v-if="media.type.startsWith('image/')" :src="media.url" alt="Media" />
+        <p v-else>{{ media.name }} ({{ media.type }})</p>
+      </div>
+    </div>
+    <div class="media-container" v-else>
+      <p>Медиафайлы отсутствуют</p>
     </div>
 
     <!-- Основное содержимое программы -->
@@ -20,31 +26,40 @@
       </div>
     </div>
 
-    <!-- Кнопка добавления в пройденное -->
-    <button class="complete-btn" @click="markAsCompleted">Добавить в пройденное</button>
+    <!-- Кнопка добавления в пройденное (только для User) -->
+    <button
+      v-if="currentUser?.type === 'User'"
+      class="complete-btn"
+      @click="markAsCompleted"
+    >
+      Добавить в пройденное
+    </button>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useProgramsStore } from '@/store/useProgramsStore'
+import { useProgramsStore } from '@/store/programs'
+import { useUsersStore } from '@/store/users'
 
 const route = useRoute()
 const router = useRouter()
-const store = useProgramsStore()
+const programsStore = useProgramsStore()
+const usersStore = useUsersStore()
 
-// Получаем программу по её ID из URL
+// Получаем текущего пользователя
+const currentUser = computed(() => usersStore.currentUser)
+
+// Получаем ID программы из параметров маршрута
 const programId = Number(route.params.programId)
-console.log(programId)
+
+// Получаем программу из store по её ID
 const program = computed(() => {
-  return store.disciplines
+  return programsStore.disciplines
     .flatMap((discipline) => discipline.programs)
     .find((p) => p.id === programId)
 })
-
-// Массив медиафайлов (замени ссылками на изображения, если нужно)
-const mediaFiles = ref(['/images/media1.png', '/images/media2.png', '/images/media3.png'])
 
 const goBack = () => {
   router.go(-1)
@@ -55,7 +70,10 @@ const goToProfile = () => {
 }
 
 const markAsCompleted = () => {
-  console.log(`Программа "${program.value?.name}" добавлена в пройденное!`)
+  if (program.value && currentUser.value?.type === 'User') {
+    usersStore.addCompletedProgram(programId)
+    console.log(`Программа "${program.value.title}" добавлена в пройденное!`)
+  }
 }
 </script>
 
@@ -103,20 +121,26 @@ p {
 
 .media-container {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  margin: 20px 0;
+  margin-bottom: 20px;
 }
 
 .media-item {
-  width: 150px;
-  height: 150px;
-  border-radius: 10px;
+  background: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.media-item img {
+  max-width: 200px;
+  max-height: 200px;
   object-fit: cover;
 }
 
 .content {
-  max-width: 800px;
-  width: 100%;
+  margin-bottom: 20px;
 }
 
 .section {

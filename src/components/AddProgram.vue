@@ -1,11 +1,11 @@
 <template>
   <div>
-    <button @click="openForm" class="add-btn">
-      Добавить новую программу <span class="plus">+</span>
+    <button v-if="!isUser" @click="openForm" class="add-btn">
+      Добавить новый материал <span class="plus">+</span>
     </button>
 
     <div v-if="showForm" class="form-container">
-      <input v-model="newProgram.title" placeholder="Название программы" class="form-input" />
+      <input v-model="newProgram.title" placeholder="Введите название" class="form-input" />
       <input v-model="newAttributes" placeholder="Атрибуты (через запятую)" class="form-input" />
       <div class="form-actions">
         <button @click="submitProgram" class="submit-btn">Добавить</button>
@@ -17,14 +17,24 @@
 
 <script setup>
 import { animate, stagger } from 'motion'
-import { ref, defineEmits, onMounted } from 'vue'
+import { ref, defineEmits, onMounted, computed  } from 'vue'
 import { useAnimate } from 'vue-motion-one'
+import { useUsersStore } from '@/store/users' 
+
+
 
 const showForm = ref(false)
 const newProgram = ref({ title: '', attributes: [] })
 const newAttributes = ref('')
 
 const emit = defineEmits(['addProgram'])
+
+const usersStore = useUsersStore()
+
+// Проверяем, является ли текущий пользователь User
+const isUser = computed(() => {
+  return usersStore.currentUser?.type === 'User'
+})
 
 const openForm = () => {
   setTimeout(() => animate('.program-list', { y: 200 }, { duration: 1 }), 1)

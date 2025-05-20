@@ -1,6 +1,8 @@
 <template>
   <header class="header">
-    <div class="user" @click="openProfile">Admin</div>
+    <div class="user" @click="openProfile">
+      {{ currentUser ? currentUser.login : 'Login' }}
+    </div>
     <h1 class="title">{{ namePage }}</h1>
 
     <div class="top-bar" v-if="!isMain">
@@ -10,12 +12,25 @@
 </template>
 
 <script setup>
-import router from '@/router'
+import { useRouter } from 'vue-router'
+import { useUsersStore } from '@/store/users'
 
 defineProps({ namePage: String, isMain: Boolean })
 
+const router = useRouter()
+const usersStore = useUsersStore()
+
+// Получаем текущего пользователя из store
+const currentUser = usersStore.currentUser
+
 const openProfile = () => {
-  console.log('Открытие личного кабинета')
+  if (currentUser) {
+    // Если пользователь авторизован, перенаправляем в личный кабинет
+    router.push('/profile')
+  } else {
+    // Если пользователь не авторизован, перенаправляем на страницу авторизации
+    router.push('/login')
+  }
 }
 
 const goBack = () => {
@@ -43,5 +58,11 @@ const goBack = () => {
   flex-grow: 1;
   text-align: center;
   font-size: 1.5rem;
+}
+
+.back-button{
+  background: none;
+  border: none;
+  color: white;
 }
 </style>

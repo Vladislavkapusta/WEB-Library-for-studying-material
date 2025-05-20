@@ -1,12 +1,18 @@
 <template>
   <div class="program-card">
-    <button v-if="isMain" @click="deleteDiscipline(program.title)" class="delete-btn">🗑</button>
-    <button v-if="!isMain" @click="deleteProgram" class="delete-btn">🗑</button>
+    <button
+      v-if="!isUser && isMain"
+      @click="deleteDiscipline(program.title)"
+      class="delete-btn"
+    >
+      🗑
+    </button>
+    <button v-if="!isUser && !isMain" @click="deleteProgram" class="delete-btn">🗑</button>
     <div class="program-info" @click="openProgram">
       <h3>{{ program.title }}</h3>
       <p>{{ program.attributes.join(', ') }}</p>
     </div>
-    <button @click="editProgram" class="edit-btn">✏</button>
+    <button v-if="!isUser" @click="editProgram" class="edit-btn">✏</button>
 
     <div v-if="isEditing" class="edit-modal">
       <input v-model="editedName" placeholder="Название программы" class="modal-input" />
@@ -16,7 +22,7 @@
         class="modal-input"
       />
       <div class="modal-actions">
-        <button @click="saveEdit" class="save-btn">Сохранить</button>
+        <button @click="saveEdit(program.title, program)" class="save-btn">Сохранить</button>
         <button @click="isEditing = false" class="cancel-btn">Отмена</button>
       </div>
     </div>
@@ -24,9 +30,10 @@
 </template>
 
 <script setup>
-import { useProgramsStore } from '@/store/useProgramsStore'
+import { useProgramsStore } from '@/store/programs' // Исправлен путь к store
+import { useUsersStore } from '@/store/users' // Подключаем store пользователей
 import { animate, hover, press, stagger } from 'motion'
-import { ref, defineProps, defineEmits, onMounted } from 'vue'
+import { ref, defineProps, defineEmits, onMounted, computed } from 'vue'
 import { useAnimate } from 'vue-motion-one'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -45,27 +52,29 @@ onMounted(() => {
   play()
 })
 
-// press('.program-card', (element) => {
-//   animate(element, { scale: 0.8 }, { type: 'spring', stiffness: 1000 })
-
-//   return () => animate(element, { scale: 1 }, { type: 'spring', stiffness: 500 })
-// })
-
 const props = defineProps({ program: Object, isMain: Boolean })
 const emit = defineEmits(['deleteProgram', 'editProgram', 'animateList'])
 
 const isEditing = ref(false)
 const editedName = ref(props.program.title)
+console.log(editedName.value)
 const editedAttributes = ref(props.program.attributes.join(', '))
 const router = useRouter()
 const route = useRoute()
-const store = useProgramsStore()
+const programsStore = useProgramsStore()
+const usersStore = useUsersStore()
+
+// Проверяем, является ли текущий пользователь User
+const isUser = computed(() => {
+  return usersStore.currentUser?.type === 'User'
+})
+
 
 const openProgram = () => {
-  if (props.isMain == true) {
+  if (props.isMain) {
     router.push(`/programs/${props.program.title}`)
   } else {
-    const discipline = store.disciplines.find((d) =>
+    const discipline = programsStore.disciplines.find((d) =>
       d.programs.some((p) => p.id === props.program.id),
     )
     if (discipline) {
@@ -74,11 +83,16 @@ const openProgram = () => {
   }
 }
 
+const discipline = ref(route.params.discipline)
+
 const deleteDiscipline = (title) => {
+  console.log(title)
   emit('animateList')
   setTimeout(
     () =>
-      (store.disciplines = store.disciplines.filter((discipline) => discipline.title !== title)),
+      (programsStore.disciplines = programsStore.disciplines.filter(
+        (discipline) => discipline.title !== title,
+      )),
     900,
   )
   setTimeout(() => reset(), 950)
@@ -93,20 +107,25 @@ const deleteProgram = () => {
 }
 
 const editProgram = () => {
-  if (props.isMain == true) {
+  if (props.isMain) {
     isEditing.value = true
   } else {
-    router.push(`/edit-program/${props.program.id}`)
+    router.push(`/edit-program/${discipline}/${props.program.id}`)
   }
 }
 
-const saveEdit = () => {
-  emit('editProgram', {
-    id: props.program.id,
+const saveEdit = (title, id) => {
+  console.log(title)
+  console.log(id)
+  programsStore.editProgram(title, 
+  {
+    id: id,
     title: editedName.value,
     attributes: editedAttributes.value.split(',').map((attr) => attr.trim()),
-  }),
-    (isEditing.value = !isEditing.value)
+  }
+  )
+  console.log(editedAttributes.value.split(',').map((attr) => attr.trim()))
+  isEditing.value = false
 }
 </script>
 
