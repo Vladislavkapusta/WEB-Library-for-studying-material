@@ -22,7 +22,7 @@
         class="modal-input"
       />
       <div class="modal-actions">
-        <button @click="saveEdit(program.title, program)" class="save-btn">Сохранить</button>
+        <button @click="saveEdit" class="save-btn">Сохранить</button>
         <button @click="isEditing = false" class="cancel-btn">Отмена</button>
       </div>
     </div>
@@ -30,8 +30,8 @@
 </template>
 
 <script setup>
-import { useProgramsStore } from '@/store/programs' // Исправлен путь к store
-import { useUsersStore } from '@/store/users' // Подключаем store пользователей
+import { useProgramsStore } from '@/store/programs'
+import { useUsersStore } from '@/store/users'
 import { animate, hover, press, stagger } from 'motion'
 import { ref, defineProps, defineEmits, onMounted, computed } from 'vue'
 import { useAnimate } from 'vue-motion-one'
@@ -57,7 +57,6 @@ const emit = defineEmits(['deleteProgram', 'editProgram', 'animateList'])
 
 const isEditing = ref(false)
 const editedName = ref(props.program.title)
-console.log(editedName.value)
 const editedAttributes = ref(props.program.attributes.join(', '))
 const router = useRouter()
 const route = useRoute()
@@ -69,7 +68,7 @@ const isUser = computed(() => {
   return usersStore.currentUser?.type === 'User'
 })
 
-
+// Открытие программы или дисциплины в режиме чтения
 const openProgram = () => {
   if (props.isMain) {
     router.push(`/programs/${props.program.title}`)
@@ -83,10 +82,8 @@ const openProgram = () => {
   }
 }
 
-const discipline = ref(route.params.discipline)
-
+// Удаление дисциплины
 const deleteDiscipline = (title) => {
-  console.log(title)
   emit('animateList')
   setTimeout(
     () =>
@@ -99,33 +96,58 @@ const deleteDiscipline = (title) => {
   setTimeout(() => play(), 1001)
 }
 
+// Удаление программы
 const deleteProgram = () => {
   emit('animateList')
-  setTimeout(() => emit('deleteProgram', props.program.id), 900)
+  const discipline = programsStore.disciplines.find((d) =>
+    d.programs.some((p) => p.id === props.program.id),
+  )
+  if (discipline) {
+    setTimeout(() => emit('deleteProgram', { disciplineTitle: discipline.title, programId: props.program.id }), 900)
+  }
   setTimeout(() => reset(), 950)
   setTimeout(() => play(), 1001)
 }
 
+// Начало редактирования
 const editProgram = () => {
   if (props.isMain) {
     isEditing.value = true
   } else {
-    router.push(`/edit-program/${discipline}/${props.program.id}`)
+    const discipline = programsStore.disciplines.find((d) =>
+      d.programs.some((p) => p.id === props.program.id),
+    )
+    if (discipline) {
+      router.push(`/edit-program/${discipline.title}/${props.program.id}`)
+    }
   }
 }
 
-const saveEdit = (title, id) => {
-  console.log(title)
-  console.log(id)
-  programsStore.editProgram(title, 
-  {
-    id: id,
-    title: editedName.value,
-    attributes: editedAttributes.value.split(',').map((attr) => attr.trim()),
+// Сохранение изменений
+const saveEdit = () => {
+  if (props.isMain) {
+    // Редактирование дисциплины
+    const updatedDiscipline = {
+      title: editedName.value,
+      attributes: editedAttributes.value.split(',').map((attr) => attr.trim()),
+    }
+    programsStore.editDiscipline(props.program.title, updatedDiscipline)
+  } else {
+    // Редактирование программы
+    const discipline = programsStore.disciplines.find((d) =>
+      d.programs.some((p) => p.id === props.program.id),
+    )
+    if (discipline) {
+      programsStore.editProgram(discipline.title, {
+        id: props.program.id,
+        title: editedName.value,
+        attributes: editedAttributes.value.split(',').map((attr) => attr.trim()),
+      })
+    }
   }
-  )
-  console.log(editedAttributes.value.split(',').map((attr) => attr.trim()))
   isEditing.value = false
+  emit('animateList') // Обновление списка после редактирования
+  setTimeout(() => play(), 1001) // Перезапуск анимации
 }
 </script>
 

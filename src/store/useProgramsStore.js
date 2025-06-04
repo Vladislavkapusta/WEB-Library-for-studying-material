@@ -12,7 +12,7 @@ export const useProgramsStore = defineStore('programs', () => {
           title: 'Введение',
           attributes: ['Easy'],
           sections: [{ text: 'Введение в HTML и CSS' }],
-          media: [], // Добавляем поле для медиа
+          media: [],
         },
         {
           id: 2,
@@ -77,7 +77,7 @@ export const useProgramsStore = defineStore('programs', () => {
       title: newProgram.title,
       attributes: newProgram.attributes || [],
       sections: newProgram.sections || [],
-      media: newProgram.media || [], // Сохраняем медиа
+      media: newProgram.media || [],
     })
   }
 
@@ -91,17 +91,31 @@ export const useProgramsStore = defineStore('programs', () => {
 
   // Редактирование программы
   const editProgram = (disciplineTitle, updatedProgram) => {
-    console.log(disciplineTitle)
-    console.log(updatedProgram)
+    console.log('Editing program:', disciplineTitle, updatedProgram)
     const discipline = disciplines.value.find((d) => d.title === disciplineTitle)
     if (discipline) {
       const index = discipline.programs.findIndex((program) => program.id === updatedProgram.id)
       if (index !== -1) {
         discipline.programs[index] = {
           ...updatedProgram,
-          media: updatedProgram.media || [], // Обновляем медиа
+          media: updatedProgram.media || [],
         }
+        console.log('Program edited successfully:', discipline.programs[index])
       }
+    }
+  }
+
+  // Редактирование дисциплины
+  const editDiscipline = (oldTitle, updatedDiscipline) => {
+    console.log('Editing discipline:', oldTitle, updatedDiscipline)
+    const index = disciplines.value.findIndex((d) => d.title === oldTitle)
+    if (index !== -1) {
+      disciplines.value[index] = {
+        ...disciplines.value[index],
+        ...updatedDiscipline,
+        title: updatedDiscipline.title, 
+      }
+      console.log('Discipline edited successfully:', disciplines.value[index])
     }
   }
 
@@ -111,5 +125,6 @@ export const useProgramsStore = defineStore('programs', () => {
     addProgram,
     deleteProgram,
     editProgram,
+    editDiscipline,
   }
 })
