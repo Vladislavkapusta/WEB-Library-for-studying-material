@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProgramsStore } from '@/store/programs'
 import { useUsersStore } from '@/store/users'
@@ -51,14 +51,25 @@ const usersStore = useUsersStore()
 // Получаем текущего пользователя
 const currentUser = computed(() => usersStore.currentUser)
 
-// Получаем ID программы из параметров маршрута
-const programId = Number(route.params.programId)
+// Получаем или устанавливаем programId из/в localStorage
+const programId = ref(Number(route.params.programId))
+onMounted(() => {
+  const savedProgramId = localStorage.getItem('currentProgramId')
+  if (savedProgramId && !route.params.programId) {
+    programId.value = Number(savedProgramId)
+  } else {
+    localStorage.setItem('currentProgramId', programId.value)
+  }
+})
+onUnmounted(() => {
+  localStorage.setItem('currentProgramId', programId.value)
+})
 
 // Получаем программу из store по её ID
 const program = computed(() => {
   return programsStore.disciplines
     .flatMap((discipline) => discipline.programs)
-    .find((p) => p.id === programId)
+    .find((p) => p.id === programId.value)
 })
 
 const goBack = () => {
@@ -71,7 +82,7 @@ const goToProfile = () => {
 
 const markAsCompleted = () => {
   if (program.value && currentUser.value?.type === 'User') {
-    usersStore.addCompletedProgram(programId)
+    usersStore.addCompletedProgram(programId.value)
     console.log(`Программа "${program.value.title}" добавлена в пройденное!`)
   }
 }

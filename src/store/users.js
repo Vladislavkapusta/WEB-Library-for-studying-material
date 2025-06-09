@@ -1,8 +1,11 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 export const useUsersStore = defineStore('users', () => {
-  const users = ref([
+  // Загрузка данных из localStorage или инициализация начальными данными
+  const loadUsers = () => {
+    const savedData = localStorage.getItem('users')
+    return savedData ? JSON.parse(savedData) : [
     {
       id: 1,
       type: 'Admin',
@@ -30,22 +33,37 @@ export const useUsersStore = defineStore('users', () => {
       email: 'testuser@example.com',
       avatar: 'https://avatar.iran.liara.run/public/boy?username=Ash',
       completedPrograms: [], // Список пройденных программ для User
-    },
-  ])
+},
+    ]
+  }
 
+   const users = ref(loadUsers())
   const currentUser = ref(null)
+
+  // Сохранение данных в localStorage при изменении
+  watch(users, (newValue) => {
+    localStorage.setItem('users', JSON.stringify(newValue))
+  }, { deep: true })
+
+  watch(currentUser, (newValue) => {
+    if (newValue) {
+      localStorage.setItem('currentUser', JSON.stringify(newValue))
+    } else {
+      localStorage.removeItem('currentUser')
+    }
+  })
 
   // Регистрация нового пользователя
   const registerUser = (userData) => {
     const newUser = {
       id: Date.now(),
-      type: 'User', // Новые пользователи по умолчанию — User
+      type: 'User',
       login: userData.login,
       password: userData.password,
-      name: userData.login, // Имя по умолчанию совпадает с логином
+      name: userData.login,
       email: userData.email,
-      avatar: 'https://avatar.iran.liara.run/public/boy?username=Ash', // Placeholder для аватарки
-      completedPrograms: [], // Пустой список для новых пользователей
+      avatar: 'https://avatar.iran.liara.run/public/boy?username=Ash',
+      completedPrograms: [],
     }
     users.value.push(newUser)
     currentUser.value = newUser
@@ -53,9 +71,7 @@ export const useUsersStore = defineStore('users', () => {
 
   // Авторизация пользователя
   const loginUser = (login, password) => {
-    const user = users.value.find(
-      (u) => u.login === login && u.password === password
-    )
+    const user = users.value.find((u) => u.login === login && u.password === password)
     if (user) {
       currentUser.value = user
       return true
@@ -68,12 +84,11 @@ export const useUsersStore = defineStore('users', () => {
     currentUser.value = null
   }
 
-  // Добавление программы в пройденные (для User)
+  // Добавление программы в список пройденных
   const addCompletedProgram = (programId) => {
     if (currentUser.value && currentUser.value.type === 'User') {
       if (!currentUser.value.completedPrograms.includes(programId)) {
         currentUser.value.completedPrograms.push(programId)
-        // Обновляем пользователя в общем списке
         const userIndex = users.value.findIndex((u) => u.id === currentUser.value.id)
         if (userIndex !== -1) {
           users.value[userIndex] = { ...currentUser.value }
@@ -81,6 +96,9 @@ export const useUsersStore = defineStore('users', () => {
       }
     }
   }
+
+  // Загрузка текущего пользователя при инициализации
+  currentUser.value = JSON.parse(localStorage.getItem('currentUser')) || null
 
   return {
     users,
